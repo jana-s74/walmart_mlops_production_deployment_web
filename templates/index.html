@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Walmart Weekly Sales Predictor</title>
+    <style>
+        :root {
+            --primary: #0071dc;
+            --primary-hover: #005bb5;
+            --secondary: #ffc220;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --success: #10b981;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 860px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        header {
+            background: linear-gradient(135deg, #0071dc 0%, #004f9a 100%);
+            color: white;
+            padding: 2rem;
+            text-align: left;
+            position: relative;
+        }
+
+        .header-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-subtitle {
+            margin-top: 0.5rem;
+            color: #dbeafe;
+            font-size: 0.95rem;
+        }
+
+        .badges {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(4px);
+            padding: 0.3rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.025em;
+        }
+
+        .badge-accent {
+            background: var(--secondary);
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .content {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 540px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        input, select {
+            padding: 0.65rem 0.85rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            background-color: #fafafa;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(0, 113, 220, 0.15);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        button {
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.75rem 1.25rem;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            flex: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            box-shadow: 0 4px 12px rgba(0, 113, 220, 0.25);
+        }
+
+        .btn-primary:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: #f3f4f6;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+
+        .result-panel {
+            background-color: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            min-height: 250px;
+        }
+
+        .result-placeholder {
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .result-placeholder svg {
+            width: 48px;
+            height: 48px;
+            stroke: #9ca3af;
+        }
+
+        .result-display {
+            display: none;
+            width: 100%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .result-value {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0.5rem 0 1rem;
+        }
+
+        .result-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+        }
+
+        .result-row span:last-child {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            display: none;
+            background-color: #fee2e2;
+            color: #b91c1c;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+            text-align: left;
+            border: 1px solid #fecaca;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem 2rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: #fafafa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-title">
+                🛒 Walmart Weekly Sales Predictor
+            </div>
+            <div class="header-subtitle">
+                MLOps Production Deployment — Real-time Machine Learning Inference
+            </div>
+            <div class="badges">
+                <span class="badge badge-accent">Model: RandomForest</span>
+                <span class="badge">R² Score: 0.9357</span>
+                <span class="badge">FastAPI Microservice</span>
+                <span class="badge">Status: Live</span>
+            </div>
+        </header>
+
+        <div class="content">
+            <form id="predictionForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="store">Store ID</label>
+                        <input type="number" id="store" name="Store" value="1" min="1" max="45" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">Date</label>
+                        <input type="date" id="date" name="Date" value="2010-02-05" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="holiday">Holiday Week</label>
+                        <select id="holiday" name="Holiday_Flag" required>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="temp">Temperature (°F)</label>
+                        <input type="number" step="0.01" id="temp" name="Temperature" value="42.31" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fuel">Fuel Price ($)</label>
+                        <input type="number" step="0.001" id="fuel" name="Fuel_Price" value="2.572" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cpi">Consumer Price Index (CPI)</label>
+                        <input type="number" step="0.001" id="cpi" name="CPI" value="211.096" required>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="unemployment">Unemployment Rate (%)</label>
+                        <input type="number" step="0.001" id="unemployment" name="Unemployment" value="8.106" required>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        <span class="spinner" id="spinner"></span>
+                        <span id="btnText">Predict Weekly Sales</span>
+                    </button>
+                    <button type="button" class="btn-secondary" id="sampleBtn">Fill Sample</button>
+                </div>
+
+                <div class="error-message" id="errorMsg"></div>
+            </form>
+
+            <div class="result-panel">
+                <div class="result-placeholder" id="placeholder">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <p>Enter the store and economic variables, then click <strong>Predict Weekly Sales</strong>.</p>
+                </div>
+
+                <div class="result-display" id="resultDisplay">
+                    <div class="result-label">Predicted Weekly Sales</div>
+                    <div class="result-value" id="predictionVal">$0.00</div>
+                    <div class="result-card">
+                        <div class="result-row">
+                            <span>Store:</span>
+                            <span id="cardStore">-</span>
+                        </div>
+                        <div class="result-row">
+                            <span>Date:</span>
+                            <span id="cardDate">-</span>
+                        </div>
+                        <div class="result-row">
+                            <span>Holiday Flag:</span>
+                            <span id="cardHoliday">-</span>
+                        </div>
+                        <div class="result-row">
+                            <span>Model Engine:</span>
+                            <span>RandomForest Regressor</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            Walmart Sales Predictive API • FastAPI + Scikit-Learn Pipeline • Port 8000
+        </footer>
+    </div>
+
+    <script>
+        const form = document.getElementById('predictionForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
+        const placeholder = document.getElementById('placeholder');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const predictionVal = document.getElementById('predictionVal');
+        const errorMsg = document.getElementById('errorMsg');
+        const sampleBtn = document.getElementById('sampleBtn');
+
+        const samples = [
+            { Store: 1, Date: "2010-02-05", Holiday_Flag: "0", Temperature: 42.31, Fuel_Price: 2.572, CPI: 211.096, Unemployment: 8.106 },
+            { Store: 4, Date: "2010-12-24", Holiday_Flag: "0", Temperature: 45.05, Fuel_Price: 2.955, CPI: 126.983, Unemployment: 7.127 },
+            { Store: 20, Date: "2011-09-09", Holiday_Flag: "1", Temperature: 64.91, Fuel_Price: 3.738, CPI: 209.114, Unemployment: 7.274 }
+        ];
+        let sampleIndex = 0;
+
+        sampleBtn.addEventListener('click', () => {
+            sampleIndex = (sampleIndex + 1) % samples.length;
+            const s = samples[sampleIndex];
+            document.getElementById('store').value = s.Store;
+            document.getElementById('date').value = s.Date;
+            document.getElementById('holiday').value = s.Holiday_Flag;
+            document.getElementById('temp').value = s.Temperature;
+            document.getElementById('fuel').value = s.Fuel_Price;
+            document.getElementById('cpi').value = s.CPI;
+            document.getElementById('unemployment').value = s.Unemployment;
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorMsg.style.display = 'none';
+
+            const payload = {
+                Store: parseFloat(document.getElementById('store').value),
+                Holiday_Flag: parseFloat(document.getElementById('holiday').value),
+                Temperature: parseFloat(document.getElementById('temp').value),
+                Fuel_Price: parseFloat(document.getElementById('fuel').value),
+                CPI: parseFloat(document.getElementById('cpi').value),
+                Unemployment: parseFloat(document.getElementById('unemployment').value),
+                Date: document.getElementById('date').value
+            };
+
+            // Loading state
+            submitBtn.disabled = true;
+            spinner.style.display = 'inline-block';
+            btnText.textContent = 'Predicting...';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Format prediction currency
+                const formatted = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD'
+                }).format(data.prediction);
+
+                predictionVal.textContent = formatted;
+                document.getElementById('cardStore').textContent = `Store #${payload.Store}`;
+                document.getElementById('cardDate').textContent = payload.Date;
+                document.getElementById('cardHoliday').textContent = payload.Holiday_Flag === 1 ? 'Yes' : 'No';
+
+                placeholder.style.display = 'none';
+                resultDisplay.style.display = 'block';
+            } catch (err) {
+                errorMsg.textContent = `Prediction failed: ${err.message}. Please make sure the backend is running.`;
+                errorMsg.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                spinner.style.display = 'none';
+                btnText.textContent = 'Predict Weekly Sales';
+            }
+        });
+    </script>
+</body>
+</html>
+
